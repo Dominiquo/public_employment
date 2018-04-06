@@ -15,11 +15,19 @@ class PostingParser(object):
 	def __init__(self, html_text):
 		self.page_obj = BeautifulSoup(html_text, 'html.parser')
 		self.main_fields = None
-
+		self.calendar_vals = None
 		# constants
 		self.MAIN_FIELDS_ID = 'lblAvisoTrabajoDatos'
 		self.TABLE = 'table'
 		self.FASE = 'Fase'
+
+	def get_parse_dict(self):
+		result_dict = {}
+		self.parse_main_fields()
+		self.parse_calendar()
+		result_dict[constants.MAIN_FIELDS] = self.main_fields
+		result_dict[constants.CALENDAR] = self.calendar_vals
+		return result_dict
 
 	def parse_main_fields(self):
 		section = self.page_obj.find(id=self.MAIN_FIELDS_ID)
@@ -44,6 +52,7 @@ class PostingParser(object):
 			all_cells = row_obj.find_all(constants.CELL)
 			if len(all_cells) > 1 and all_cells[0].text != self.FASE:
 				table_vals.append((all_cells[0].text, all_cells[1].text))
+		self.calendar_vals = table_vals
 		return table_vals
 
 	def extract_table(self):
