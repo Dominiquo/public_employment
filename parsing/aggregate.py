@@ -1,7 +1,11 @@
 import os
+import numpy as np
 import pandas as pd
+import pickle
 from parsing import PostingHandler
 from utils import constants
+
+
 
 def load_all_pages(page_dir, limit=float('inf')):
 	all_pages_text = []
@@ -16,6 +20,20 @@ def load_all_pages(page_dir, limit=float('inf')):
 				page_id = get_page_id(page_file)
 				all_pages_text.append((page_id, infile.read()))
 	return all_pages_text
+
+
+def add_results(dataframe, results_pickle_fn):
+	with open(results_pickle_fn) as infile:
+		results_dict = pickle.load(infile)
+
+	def add_result(v):
+		if v in results_dict:
+			return results_dict[v]
+		return np.nan
+
+	dataframe[constants.RESULTS] = dataframe[constants.ID_FIELD].apply(add_result)
+	return dataframe
+
 
 def get_page_id(filename):
 	underscore = '_'
@@ -71,7 +89,7 @@ def level_df_dict(df_dict, columns_set, added_main):
 	# Fill in rows with None vals that were missing in the pages main fields
 	add_vals = columns_set - added_main
 	for col in add_vals:
-		df_dict[col].append(None)
+		df_dict[col].append(np.nan)
 	return df_dict
 
 
