@@ -21,6 +21,7 @@ ROW = 'tr'
 CELL = 'td'
 LIST_ITEM = 'li'
 BOLD_TAG = 'b'
+UNORDERED_BULLET = 'ul'
 
 
 DT_FORMAT = '%d/%m/%Y'

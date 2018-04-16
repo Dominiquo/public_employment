@@ -30,16 +30,20 @@ class PostingParser(object):
 		return result_dict
 
 	def parse_main_fields(self):
-		section = self.page_obj.find(id=self.MAIN_FIELDS_ID)
-		list_section = section.find_all(constants.LIST_ITEM)
 		kv_pairs = []
+		section = self.page_obj.find(id=self.MAIN_FIELDS_ID)
+		if not section:
+			return kv_pairs
+		list_section = section.find_all(constants.LIST_ITEM)
 		for list_item in list_section:
-			key_tag = list_item.find(constants.BOLD_TAG)
-			if key_tag != None:
-				key = key_tag.text
-				# remove text that isn't bold because there is not tag for value
-				value = list_item.text[len(key):]
-				kv_pairs.append((key, value))
+			# eliminate duplicates
+			if list_item.find(constants.UNORDERED_BULLET) == None:
+				key_tag = list_item.find(constants.BOLD_TAG)
+				if key_tag != None:
+					key = key_tag.text
+					# remove text that isn't bold because there is not tag for value
+					value = list_item.text[len(key):]
+					kv_pairs.append((key, value))
 		self.main_fields = kv_pairs
 		return kv_pairs
 
@@ -61,5 +65,5 @@ class PostingParser(object):
 		for table in tables:
 			if self.FASE in table.text:
 				time_table = table
-		return table
+		return time_table
 

@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 .DS_Store
+utils/work_journal.txt
 # C extensions
 *.so
 
