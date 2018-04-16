@@ -13,19 +13,31 @@ def load_all_pages(page_dir, limit=float('inf')):
 		if page_file.endswith('.html'):
 			full_path = os.path.join(page_dir, page_file)
 			with open(full_path) as infile:
-				all_pages_text.append(infile.read())
+				page_id = get_page_id(page_file)
+				all_pages_text.append((page_id, infile.read()))
 	return all_pages_text
 
+def get_page_id(filename):
+	underscore = '_'
+	if underscore in filename:
+		num = filename.split(underscore)[0]
+	try:
+		return int(num)
+	except Exception as e:
+		print(e)
+		return -1
+	return -1
 
-def page_to_fields(page_text):
-	page_obj = PostingHandler.PostingParser(page_text)
+
+def page_to_fields(page_text, page_id):
+	page_obj = PostingHandler.PostingParser(page_text, page_id)
 	return page_obj.get_parse_dict()
 
 
 def get_all_page_fields(page_dir, limit=float('inf')):
 	all_pages = load_all_pages(page_dir, limit)
 	print('extracting information from pages...')
-	return [page_to_fields(page_text) for page_text in all_pages]
+	return [page_to_fields(page_text, p_id) for p_id, page_text in all_pages]
 
 
 def get_all_page_main_fields(all_page_fields):
