@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 .DS_Store
 utils/work_journal.txt
+stored_pages/*
 # C extensions
 *.so
 
