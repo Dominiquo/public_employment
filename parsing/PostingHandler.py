@@ -27,6 +27,7 @@ class PostingParser(object):
 		result_dict = {}
 		self.parse_main_fields()
 		self.parse_calendar()
+		result_dict[constants.ID_FIELD] = self.page_id
 		result_dict[constants.MAIN_FIELDS] = self.main_fields
 		result_dict[constants.CALENDAR] = self.calendar_vals
 		return result_dict
