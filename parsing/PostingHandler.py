@@ -4,6 +4,7 @@ import os
 import json
 import re
 from utils import constants
+from parsing import calendar_parsing as cp
 
 class PostingParser(object):
 	'''extract different parts from an html page of a public sector job posting
@@ -16,20 +17,18 @@ class PostingParser(object):
 		self.page_obj = BeautifulSoup(html_text, 'html.parser')
 		self.page_id = page_id
 		self.main_fields = None
-		self.calendar_vals = None
+		self.time_table = None
+		self.cal_obj = None
+		self.cal_values = None
 		# constants
 		self.MAIN_FIELDS_ID = 'lblAvisoTrabajoDatos'
 		self.ID_FIELD = 'PAGE_ID'
-		self.TABLE = 'table'
-		self.FASE = 'Fase'
 
 	def get_parse_dict(self):
 		result_dict = {}
-		self.parse_main_fields()
-		self.parse_calendar()
 		result_dict[constants.ID_FIELD] = self.page_id
-		result_dict[constants.MAIN_FIELDS] = self.main_fields
-		result_dict[constants.CALENDAR] = self.calendar_vals
+		result_dict[constants.MAIN_FIELDS] = self.parse_main_fields()
+		result_dict[constants.CALENDAR] = self.get_cal_info()
 		return result_dict
 
 	def parse_main_fields(self):
@@ -50,23 +49,31 @@ class PostingParser(object):
 		self.main_fields = kv_pairs
 		return kv_pairs
 
-	def parse_calendar(self):
-		time_table = self.extract_table()
-		if time_table == None: return []
-		all_rows = time_table.find_all(constants.ROW)
-		table_vals = []
-		for row_obj in all_rows:
-			all_cells = row_obj.find_all(constants.CELL)
-			if len(all_cells) > 1 and all_cells[0].text != self.FASE:
-				table_vals.append((all_cells[0].text, all_cells[1].text))
-		self.calendar_vals = table_vals
-		return table_vals
+	def get_cal_obj(self):
+		if self.time_table == None:
+			self.extract_table()
+		self.cal_obj = cp.CalendarParser(self.time_table, self.page_id)
+		return self.cal_obj
+
+	def get_cal_info(self):
+		if self.cal_obj == None:
+			self.get_cal_obj()
+		cal_vals = {constants.DAYS_OPEN: None,
+					constants.DAYS_SELECT: None,
+					constants.PROC_TIME: None}
+		if self.cal_obj.get_is_valid():
+			cal_vals[constants.DAYS_OPEN] = self.cal_obj.get_days_open()
+			cal_vals[constants.DAYS_SELECT] = self.cal_obj.get_days_selection()
+			cal_vals[constants.PROC_TIME] = self.cal_obj.get_process_time()
+		self.cal_values = cal_vals
+		return self.cal_values
 
 	def extract_table(self):
-		tables = self.page_obj.find_all(self.TABLE)
+		tables = self.page_obj.find_all(constants.TABLE)
 		time_table = None	
 		for table in tables:
-			if self.FASE in table.text:
+			if constants.FASE in table.text:
 				time_table = table
+		self.time_table = time_table
 		return time_table
 

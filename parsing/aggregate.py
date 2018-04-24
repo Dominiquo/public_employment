@@ -55,6 +55,10 @@ def page_to_fields(page_text, page_id):
 def get_all_page_fields(page_dir, limit=float('inf')):
 	all_pages = load_all_pages(page_dir, limit)
 	print('extracting information from pages...')
+	# all_fields = []
+	# for p_id, page_text in all_pages:
+	# 	all_fields.append(page_to_fields(page_text, p_id))
+	# return all_fields
 	return [page_to_fields(page_text, p_id) for p_id, page_text in all_pages]
 
 
@@ -75,6 +79,7 @@ def make_df_all_pages(page_dir, limit=float('inf')):
 	df_dict = {key:[] for key in columns_set}
 	for page_fields in all_page_fields:
 		main_fields = page_fields[constants.MAIN_FIELDS]
+		cal_fields = page_fields[constants.CALENDAR]
 		# check that value isn't None
 		if main_fields:
 			added_main = set([v[0] for v in main_fields])
@@ -82,6 +87,12 @@ def make_df_all_pages(page_dir, limit=float('inf')):
 			for key,val in main_fields:
 				df_dict[key].append(val)
 			level_df_dict(df_dict, columns_set, added_main)
+		if cal_fields:
+			for field_name, days_count in cal_fields.items():
+				if field_name in df_dict:
+					df_dict[field_name].append(days_count)
+				else:
+					df_dict[field_name] = [days_count]
 	return pd.DataFrame(df_dict)
 
 
