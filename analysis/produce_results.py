@@ -7,14 +7,6 @@ import pandas as pd
 import numpy as np
 
 
-
-def job_dist_by_ministry(dataframe):
-	counts = dataframe[constants.MINISTRY].value_counts()
-	title = 'Ministry Size By Postings'
-	pie_plot(counts, title)
-	return None
-
-
 def job_dist_by_date_plot(dataframe):
 	title = 'Job Postings by Date'
 	dataframe = get_time_month_df(dataframe)
@@ -30,14 +22,14 @@ def posting_dist_by_month_plot(dataframe):
 def ministry_size_normalize_plot(dataframe):
 	title = 'Postings By Department Normalized by Budget'
 	vcount = ministry_size_normalized_df(dataframe)
-	vcount[constants.SIZE].plot(kind='bar', title=title)
+	vcount[constants.SIZE].sort_values(ascending=False).plot(kind='bar', title=title)
 	return None
 
 def ministry_by_size_plot(dataframe):
 	title = 'Ministry Size by Number of Postings'
 	df = transformation_pipeline.update_ministry_name(dataframe)
 	vcount = df[constants.MINISTRY].value_counts().to_frame()
-	vcount[constants.MINISTRY].plot(kind='bar', title=title)
+	vcount[constants.MINISTRY].sort_values(ascending=False).plot(kind='bar', title=title)
 	return None
 
 def ministry_num_vac_normalize_plot(dataframe):
@@ -58,13 +50,17 @@ def ministry_num_vac_budget_plot(dataframe):
 
 def wage_by_month_plot(dataframe):
 	title = 'Average Gross Salary Offered By Month of Year'
-	dataframe.groupby(constants.MONTH).agg({constants.WAGE_V: [np.mean]}).plot(title=title)
+	df_grouped = dataframe.groupby(constants.MONTH).agg({constants.WAGE_V: [np.mean]})
+	df_grouped.columns = df_grouped.columns.droplevel(0)
+	df_grouped.plot(title=title)
 	return None
 
 def wage_by_month_all_plot(dataframe):
 	title = 'Average Gross Salary Offered By Month All'
 	dataframe = get_time_month_df(dataframe)
-	dataframe.groupby(constants.TIME_OBJ).agg({constants.WAGE_V: [np.mean]}).plot(title=title)
+	df_grouped = dataframe.groupby(constants.TIME_OBJ).agg({constants.WAGE_V: [np.mean]})
+	df_grouped.columns = df_grouped.columns.droplevel(0)
+	df_grouped.plot(title=title)
 	return None
 
 def wage_by_ministry_plot(dataframe, threshold=75):
@@ -107,11 +103,14 @@ def days_open_ministry_plot(dataframe, threshold=75):
 def days_open_by_month_all_plot(dataframe):
 	title = 'Average Days Open by Date'
 	dataframe = get_time_month_df(dataframe)
-	dataframe.groupby(constants.TIME_OBJ).agg({constants.DAYS_OPEN: [np.mean]}).plot(title=title)
+	df_grouped = dataframe.groupby(constants.TIME_OBJ).agg({constants.DAYS_OPEN: [np.mean]})
+	df_grouped.columns = df_grouped.columns.droplevel(0)
+	df_grouped.plot(title=title)
 	return None
 
 def days_open_contract_type_plot(dataframe):
-	dataframe.groupby(constants.VAC_TYP).agg({constants.DAYS_OPEN: np.mean}).plot(kind='bar')
+	title = 'Days Open By Vacancy Type'
+	dataframe.groupby(constants.VAC_TYP).agg({constants.DAYS_OPEN: np.mean}).plot(kind='bar', title=title)
 	return None
 
 def results_by_contract_type_plot(dataframe):
@@ -202,30 +201,20 @@ def to_int(v):
         return np.nan
 
 
-def pie_plot(counts, title):
-	plt.gca().axis("equal")
-	pie = plt.pie(counts, startangle=0, pctdistance=0.9, radius=1.2)
-	labels= counts.index
-	plt.title(title, weight='bold', size=14)
-	plt.legend(pie[0],labels, bbox_to_anchor=(1,0.5), loc="right", fontsize=6, 
-	           bbox_transform=plt.gcf().transFigure)
-	plt.subplots_adjust(left=0.0, bottom=0.1, right=0.85)
-	plt.show()
-	plt.clf()
-	plt.close()
-	return None
-
 def year_month(year, month):
     if pd.notnull(year) and pd.notnull(month):
         return datetime(year=int(year), month=int(month), day=1)
     return np.nan
 
+
 def get_size_dict():
-	sizes = aggregate.get_ministry_sizes(ministry_path='../data/ministry_budget.csv')
+	sizes = aggregate.get_ministry_sizes(ministry_path='data/ministry_budget.csv')
 	sizes[''] = np.nan
 	sizes[' '] = np.nan
 	sizes['TESORO PÚBLICO'] = np.nan
 	return sizes
 
+
 def count(x):
      return x.count()
+
