@@ -60,11 +60,16 @@ class PostingParser(object):
 			self.get_cal_obj()
 		cal_vals = {constants.DAYS_OPEN: None,
 					constants.DAYS_SELECT: None,
-					constants.PROC_TIME: None}
+					constants.PROC_TIME: None,
+					constants.YEAR: None,
+					constants.MONTH: None}
 		if self.cal_obj.get_is_valid():
 			cal_vals[constants.DAYS_OPEN] = self.cal_obj.get_days_open()
 			cal_vals[constants.DAYS_SELECT] = self.cal_obj.get_days_selection()
 			cal_vals[constants.PROC_TIME] = self.cal_obj.get_process_time()
+			cal_vals[constants.YEAR] = self.cal_obj.get_year()
+			cal_vals[constants.MONTH] = self.cal_obj.get_month()
+
 		self.cal_values = cal_vals
 		return self.cal_values
 

@@ -16,23 +16,10 @@ def load_all_pages(page_dir, limit=float('inf')):
 			break
 		if page_file.endswith('.html'):
 			full_path = os.path.join(page_dir, page_file)
-			with open(full_path) as infile:
+			with open(full_path, encoding="ISO-8859-1") as infile:
 				page_id = get_page_id(page_file)
 				all_pages_text.append((page_id, infile.read()))
 	return all_pages_text
-
-
-def add_results(dataframe, results_pickle_fn):
-	with open(results_pickle_fn) as infile:
-		results_dict = pickle.load(infile)
-
-	def add_result(v):
-		if v in results_dict:
-			return results_dict[v]
-		return np.nan
-
-	dataframe[constants.RESULTS] = dataframe[constants.ID_FIELD].apply(add_result)
-	return dataframe
 
 
 def get_page_id(filename):
@@ -55,10 +42,6 @@ def page_to_fields(page_text, page_id):
 def get_all_page_fields(page_dir, limit=float('inf')):
 	all_pages = load_all_pages(page_dir, limit)
 	print('extracting information from pages...')
-	# all_fields = []
-	# for p_id, page_text in all_pages:
-	# 	all_fields.append(page_to_fields(page_text, p_id))
-	# return all_fields
 	return [page_to_fields(page_text, p_id) for p_id, page_text in all_pages]
 
 
@@ -104,3 +87,38 @@ def level_df_dict(df_dict, columns_set, added_main):
 	return df_dict
 
 
+def add_results_df(dataframe, results_file, id_col=constants.ID_FIELD):
+	results = 'RESULTS'
+	try:
+		results_df = pd.read_csv(results_file, index_col=0)
+		results_dict = results_df.to_dict(orient='index')
+		add_result = lambda id_val: results_dict[id_val][results] if id_val in results_dict else np.nan
+		dataframe[results] = dataframe[id_col].apply(add_result)
+		return dataframe
+	except Exception as e:
+		print(e)
+		return dataframe
+
+
+def add_results_category(dataframe):
+	val_categories = set([constants.DESIERTO,
+							constants.SIN_RESULTADO,
+							constants.SIN_EFECTO])
+	HAS_RESULT = 'RESULT'
+	dataframe[constants.RESULT_CAT] = dataframe[constants.RESULTS].apply(
+										lambda v: v if v in val_categories else HAS_RESULT)
+	return dataframe
+
+
+def get_ministry_sizes(ministry_path='data/ministry_budget.csv'):
+	ministry = 'MINISTRY'
+	personel_budget = 'Personel_Budget'
+	bad_ministry_val = 'Ministerio de PlanificaciÃ³n'
+	df_min = pd.read_csv(ministry_path)
+
+	ministry_value_dict = {}
+	ministry_value_dict['Autónomo'] = np.nan
+	for i,row in df_min.iterrows():
+		ministry_value_dict[row[ministry]] = row[personel_budget]
+
+	return ministry_value_dict

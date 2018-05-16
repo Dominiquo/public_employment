@@ -108,6 +108,23 @@ class CalendarParser(object):
 			self.max_date = max(self.cal_parsed, key=lambda v: v[2])
 		return self.max_date
 
+	def get_end_date(self):
+		if self.is_valid:
+			_, start, close = self.get_max_date()
+			return close
+		return np.nan
+
+	def get_year(self):
+		date_obj = self.get_end_date()
+		if pd.notnull(date_obj):
+			return date_obj.year
+		return date_obj
+
+	def get_month(self):
+		date_obj = self.get_end_date()
+		if pd.notnull(date_obj):
+			return date_obj.month
+		return date_obj
 
 
 def datetime_translate(dt_string):
