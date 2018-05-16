@@ -45,7 +45,7 @@ RESULT_CAT = 'RESULT_CAT'
 WAGE_OG = 'Renta Bruta'
 WAGE_V = 'WAGE'
 MINISTRY = 'Ministerio'
-MINISTRY_VAL = 'personel_budget'
+MINISTRY_VAL = 'personnel_budget'
 
 # RESULTS CATEGORIES
 DESIERTO = 'EMPLEO DECLARADO DESIERTO'

@@ -112,13 +112,13 @@ def add_results_category(dataframe):
 
 def get_ministry_sizes(ministry_path='data/ministry_budget.csv'):
 	ministry = 'MINISTRY'
-	personel_budget = 'Personel_Budget'
+	personnel_budget = 'personnel_budget'
 	bad_ministry_val = 'Ministerio de PlanificaciÃ³n'
 	df_min = pd.read_csv(ministry_path)
 
 	ministry_value_dict = {}
 	ministry_value_dict['Autónomo'] = np.nan
 	for i,row in df_min.iterrows():
-		ministry_value_dict[row[ministry]] = row[personel_budget]
+		ministry_value_dict[row[ministry]] = row[personnel_budget]
 
 	return ministry_value_dict
