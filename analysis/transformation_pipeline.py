@@ -6,10 +6,10 @@ from utils import constants
 
 def create_clean_df(pages_fp, results_fp, limit=float('inf')):
 	df = aggregate.make_df_all_pages(pages_fp, limit)
+	df = clean_ministerio(df)
 	df = aggregate.add_results_df(df, results_fp)
 	df = aggregate.add_results_category(df)
 	df = clean_wage_col(df)
-	df = clean_ministerio(df)
 	return df
 
 def clean_wage_col(dataframe):
@@ -25,6 +25,7 @@ def update_ministry_name(dataframe):
 def clean_ministerio(dataframe):
 	print('removing nan ministerio values...')
 	dataframe = dataframe[dataframe[constants.MINISTRY].notnull()]
+	dataframe = dataframe[dataframe[constants.MINISTRY] != '']
 	return dataframe
 
 def clean_wage_str(wage_str):
@@ -32,6 +33,5 @@ def clean_wage_str(wage_str):
 		if pd.notnull(wage_str):
 			return int(wage_str.replace('.',''))
 	except Exception as e:
-		print(e)
-		print(wage_str)
+		pass
 	return np.nan

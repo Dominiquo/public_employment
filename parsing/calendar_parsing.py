@@ -92,7 +92,7 @@ class CalendarParser(object):
 				_, open_d_final, close_d_final = self.max_date
 				# returns a timedelta object so .days is a method of TimeDelta
 			except Exception as e:
-				print(e)
+				print('process time failure.')
 			return (close_d_final - open_d_start).days
 		return None
 
@@ -135,7 +135,7 @@ def datetime_translate(dt_string):
 			start_obj = datetime.strptime(start, STRING_FORMAT)
 			end_obj = datetime.strptime(end, STRING_FORMAT)
 		except Exception as e:
-			print(e)
+			print('%s DT string not handled' % dt_string)
 			return datetime.fromtimestamp(0), datetime.fromtimestamp(0)
 
 		return start_obj, end_obj

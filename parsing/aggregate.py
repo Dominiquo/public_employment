@@ -29,7 +29,7 @@ def get_page_id(filename):
 	try:
 		return int(num)
 	except Exception as e:
-		print(e)
+		print('Page ID not found')
 		return -1
 	return -1
 
@@ -96,7 +96,7 @@ def add_results_df(dataframe, results_file, id_col=constants.ID_FIELD):
 		dataframe[results] = dataframe[id_col].apply(add_result)
 		return dataframe
 	except Exception as e:
-		print(e)
+		print('Cannot add results.')
 		return dataframe
 
 

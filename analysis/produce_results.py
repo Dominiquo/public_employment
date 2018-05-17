@@ -144,7 +144,45 @@ def results_by_date_plot(dataframe, threshold=100):
 	dataframe[result_col].plot(title=title)
 	return None
 
+def vacancies_by_region(dataframe):
+	region = 'RegiÃ³n'
+	title = 'Number of Vacanies by Region'
+	dataframe = dataframe.groupby(region).agg({constants.VACANCIES: sum})
+	dataframe[constants.VACANCIES].plot(kind='bar', title=title)
+	return None
 
+def wage_by_region(dataframe, threshold=200):
+	region = 'RegiÃ³n'
+	title = 'Average Wage by Region'
+	count_col = 'count'
+	mean_col = 'mean'
+	dataframe = dataframe.groupby(region).agg({constants.WAGE_V: [np.mean, count]})
+	dataframe.columns = dataframe.columns.droplevel(0)
+	dataframe = dataframe[dataframe[count_col] > threshold]
+	dataframe[mean_col].plot(kind='bar', title=title)
+	return None
+
+
+def type_contract_by_date_plot(dataframe):
+	title = 'Number of Vacancy Type Postings by Type and Date'
+	dataframe = get_time_month_df(dataframe)
+	df_grouped = dataframe.groupby([constants.TIME_OBJ, constants.VAC_TYP])
+	df_agg = df_grouped.agg({constants.MINISTRY: count})
+	df_agg = df_agg.unstack(constants.VAC_TYP)
+	df_agg.columns = df_agg.columns.droplevel(0)
+	df_agg.plot(title=title)
+	return None
+
+
+def type_contract_by_month(dataframe):
+	title = 'Type of Vacancy Count by Month'
+	dataframe = get_time_month_df(dataframe)
+	df_grouped = dataframe.groupby([constants.MONTH, constants.VAC_TYP])
+	df_agg = df_grouped.agg({constants.MINISTRY: count})
+	df_agg = df_agg.unstack(constants.VAC_TYP)
+	df_agg.columns = df_agg.columns.droplevel(0)
+	df_agg.plot(title=title)
+	return None
 
 
 ########################## DATAFRAME BUILDER ###############################
@@ -192,6 +230,29 @@ def threshold_filter(dataframe, column, threshold=100):
 	counts_series = counts_series[counts_series > threshold]
 	return dataframe[dataframe[column].isin(counts_series.index)]
 
+def heatmap_wage_ministry_vac_type_df(dataframe, threshold=200):
+	title = 'Heatmap of Wage by Ministry and Vacancy Type'
+	dataframe = transformation_pipeline.update_ministry_name(dataframe)
+	dataframe = threshold_filter(dataframe, constants.MINISTRY, threshold)
+	mat = make_matrix_format(dataframe, constants.MINISTRY, constants.VAC_TYP, constants.WAGE_V, np.mean)
+	mat.columns = mat.columns.droplevel(0)
+	return mat
+
+def heatmap_days_open_ministry_vac_type_df(dataframe, threshold=200):
+	dataframe = transformation_pipeline.update_ministry_name(dataframe)
+	dataframe = threshold_filter(dataframe, constants.MINISTRY, threshold)
+	mat = make_matrix_format(dataframe, constants.MINISTRY, constants.VAC_TYP, constants.DAYS_OPEN, np.mean)
+	mat.columns = mat.columns.droplevel(0)
+	return mat
+
+def heatmap_wage_ministry_result_cat_df(dataframe, threshold=200):
+	dataframe = transformation_pipeline.update_ministry_name(dataframe)
+	dataframe = threshold_filter(dataframe, constants.MINISTRY, threshold)
+	mat = make_matrix_format(dataframe, constants.MINISTRY, constants.RESULT_CAT, constants.WAGE_V, np.mean)
+	mat.columns = mat.columns.droplevel(0)
+	return mat
+
+
 ########################## HELPER ###############################
 
 def to_int(v):
@@ -217,4 +278,9 @@ def get_size_dict():
 
 def count(x):
      return x.count()
+
+def make_matrix_format(df, index_c, col_c, val_c, agg_meth):
+    df_group = df.groupby([index_c, col_c]).agg({val_c: agg_meth}).unstack(col_c)
+    df_matrix = df_group[df_group.columns.levels[0]]
+    return df_matrix
 
